@@ -4,8 +4,6 @@ session_start(); // Session brauchen wir um uns den Token merken
                  // zu können. Sonst müssten wir uns bei tado immer 
                  // wieder einen neuen abholen.
 
-// Auto Refresh auf 1 Minute setzen
-
 header('Content-Type: application/json; charset=utf-8');
 
 // Basic defintions
@@ -14,6 +12,10 @@ header('Content-Type: application/json; charset=utf-8');
 	include ('get_tadoX_status_get_token.php');
 	include ('basic_functions.php');
 }
+
+// Switch debug on/off
+
+	$debugging = 1;
 
 // 1. tado stuff - get the data
 //    Basic stuff for the URLs etc.
@@ -31,7 +33,7 @@ header('Content-Type: application/json; charset=utf-8');
 
 	$meCommand="me";
 	$homeCommand="homes/";
-	$homeID="1600099/";								// This needs to be flexibel in the future
+	$homeID="xxxxxxx/";								// This needs to be flexibel in the future
 
 	$roomsCommand="rooms";
 	$roomsAndDevicesCommand="roomsAndDevices";

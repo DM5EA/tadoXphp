@@ -140,13 +140,17 @@ function writeTokenFile() {
 
 function writeLogFile($text1,$text2) {
 
-	$logFile = fopen("/opt/fhem/tadoTokenDir/logToken.log", "a");
-	$json = json_encode(json_decode($text2), JSON_PRETTY_PRINT);
-	fwrite($logFile, $text1."\n");
-	fwrite($logFile, date("Y-m-d H:i:s", time())." ".time()."\n");
-	fwrite($logFile, $json."\n");
-	fwrite($logFile, "----------------------------------------------\n");
-	fclose($logFile);
+	global $debugging;
+
+	if ($debugging == 1) {
+	   $logFile = fopen("/opt/fhem/tadoTokenDir/logToken.log", "a");
+	   $json = json_encode(json_decode($text2), JSON_PRETTY_PRINT);
+	   fwrite($logFile, $text1."\n");
+	   fwrite($logFile, date("Y-m-d H:i:s", time())." ".time()."\n");
+	   fwrite($logFile, $json."\n");
+	   fwrite($logFile, "----------------------------------------------\n");
+	   fclose($logFile);
+	}
 
 }
 ?>
