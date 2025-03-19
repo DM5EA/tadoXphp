@@ -42,18 +42,22 @@ header('Content-Type: application/json; charset=utf-8');
 	$oauthURL=$authURL."oauth/token";		// oAuth path
 	$oauth2URL=$auth2URL."oauth2/token";		// oAuth path
 	$hopsURL='https://hops.tado.com/homes/';	// tado X
+	$energyURL='https://energy-insights.tado.com/api/';	// Energy statistics
 
 // Pathes for the different API calls
 
 	$meCommand="me";
 	$homeCommand="homes/";
-	$homeID="xxxxxxx/";								// This needs to be flexibel in the future
+	$homeID="1600099/";								// This needs to be flexibel in the future
 
 	$roomsCommand="rooms";
 	$roomsAndDevicesCommand="roomsAndDevices";
 	$heatPumpCommand="heatPump";
+	$airComfortCommand="airComfort";
 	$stateCommand="state";
+	$usersCommand="users";
 	$weatherCommand="weather";
+	$energyCommand="consumptionOverview?month=";
 
 // Get an access token first. 
 
@@ -97,6 +101,11 @@ header('Content-Type: application/json; charset=utf-8');
 		//$myTadoHeatPumpArray=json_decode($myTadoHeatPump, true); 
 		print ($myTadoHeatPump);
 	    }
+	    else if ($_GET['what']=='aircomfort') {
+		curl_setopt($curl, CURLOPT_URL, $hopsURL.$homeID.$airComfortCommand);
+		$myTadoHeatPump = curl_exec($curl); 				
+		print ($myTadoHeatPump);
+	    }
 	    else if ($_GET['what']=='devices') {
 		curl_setopt($curl, CURLOPT_URL, $hopsURL.$homeID.$roomsAndDevicesCommand);
 		$myTadoRoomsAndDevices = curl_exec($curl); 				
@@ -121,8 +130,18 @@ header('Content-Type: application/json; charset=utf-8');
                 $myTadoMe = curl_exec($curl);
                 print ($myTadoMe);
 	    }
+	    else if ($_GET['what']=='users') {
+                curl_setopt($curl, CURLOPT_URL, $tadoHomePage.$homeCommand.$homeID.$usersCommand);
+                $myTadoMe = curl_exec($curl);
+                print ($myTadoMe);
+	    }
 	    else if ($_GET['what']=='weather') {
                 curl_setopt($curl, CURLOPT_URL, $tadoHomePage.$homeCommand.$homeID.$weatherCommand);
+                $myTadoMe = curl_exec($curl);
+                print ($myTadoMe);
+	    }
+	    else if ($_GET['what']=='energy') {
+                curl_setopt($curl, CURLOPT_URL, $energyURL.$homeCommand.$homeID.$energyCommand.date("Y-m"));
                 $myTadoMe = curl_exec($curl);
                 print ($myTadoMe);
 	    }
