@@ -48,8 +48,6 @@ header('Content-Type: application/json; charset=utf-8');
 
 	$meCommand="me";
 	$homeCommand="homes/";
-	$homeID="xxxxxxx/";								// This needs to be flexibel in the future
-
 	$roomsCommand="rooms";
 	$roomsAndDevicesCommand="roomsAndDevices";
 	$heatPumpCommand="heatPump";
@@ -88,6 +86,15 @@ header('Content-Type: application/json; charset=utf-8');
 	curl_setopt($curl, CURLOPT_HEADER, false);
 	curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
 
+// Get the me part to know the home id. We assume to have one home only.
+
+	curl_setopt($curl, CURLOPT_URL, $tadoHomePage.$meCommand);
+	$myTadoMe = curl_exec($curl);
+	$myTadoMeArray=json_decode($myTadoMe, true);
+	$homeID=($myTadoMeArray["homes"][0]["id"])."/";
+
+// Now let see what is requested
+
 	if (isset($_GET['what'])) {
 	    if ($_GET['what']=='rooms') {
         	curl_setopt($curl, CURLOPT_URL, $hopsURL.$homeID.$roomsCommand);
@@ -103,8 +110,8 @@ header('Content-Type: application/json; charset=utf-8');
 	    }
 	    else if ($_GET['what']=='aircomfort') {
 		curl_setopt($curl, CURLOPT_URL, $hopsURL.$homeID.$airComfortCommand);
-		$myTadoHeatPump = curl_exec($curl); 				
-		print ($myTadoHeatPump);
+		$myTadoAirComfort = curl_exec($curl); 				
+		print ($myTadoAirComfort);
 	    }
 	    else if ($_GET['what']=='devices') {
 		curl_setopt($curl, CURLOPT_URL, $hopsURL.$homeID.$roomsAndDevicesCommand);
@@ -123,27 +130,28 @@ header('Content-Type: application/json; charset=utf-8');
 	    else if ($_GET['what']=='me') {
                 curl_setopt($curl, CURLOPT_URL, $tadoHomePage.$meCommand);
                 $myTadoMe = curl_exec($curl);
+        	$myTadoMeArray=json_decode($myTadoMe, true);
                 print ($myTadoMe);
 	    }
 	    else if ($_GET['what']=='state') {
                 curl_setopt($curl, CURLOPT_URL, $tadoHomePage.$homeCommand.$homeID.$stateCommand);
-                $myTadoMe = curl_exec($curl);
-                print ($myTadoMe);
+                $myTadoState = curl_exec($curl);
+                print ($myTadoState);
 	    }
 	    else if ($_GET['what']=='users') {
                 curl_setopt($curl, CURLOPT_URL, $tadoHomePage.$homeCommand.$homeID.$usersCommand);
-                $myTadoMe = curl_exec($curl);
-                print ($myTadoMe);
+                $myTadoUsers = curl_exec($curl);
+                print ($myTadoUsers);
 	    }
 	    else if ($_GET['what']=='weather') {
                 curl_setopt($curl, CURLOPT_URL, $tadoHomePage.$homeCommand.$homeID.$weatherCommand);
-                $myTadoMe = curl_exec($curl);
-                print ($myTadoMe);
+                $myTadoWeather = curl_exec($curl);
+                print ($myTadoWeather);
 	    }
 	    else if ($_GET['what']=='energy') {
                 curl_setopt($curl, CURLOPT_URL, $energyURL.$homeCommand.$homeID.$energyCommand.date("Y-m"));
-                $myTadoMe = curl_exec($curl);
-                print ($myTadoMe);
+                $myTadoEnergy = curl_exec($curl);
+                print ($myTadoEnergy);
 	    }
 	    else {
 		curl_setopt($curl, CURLOPT_URL, $hopsURL.$homeID.$_GET['what']);
