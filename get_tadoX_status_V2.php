@@ -10,12 +10,12 @@ header('Content-Type: application/json; charset=utf-8');
 
 {
 	include ('get_tadoX_status_get_token.php');
-	include ('basic_functions.php');
 }
 
 // Switch debug on/off
 
-	$debugging = 1;
+//	$debugging = 1;
+	$debugging = 0;
 
         if (isset($_SESSION['interlock'])) {
 	   if ($_SESSION['interlock'] == 1) {

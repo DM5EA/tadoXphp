@@ -22,7 +22,7 @@
 // in der URL vor. 
 // 2025-03-11: Implementierung der neuen deviceID. Dazu ist das Script wie folgt zu starten:
 // http://192.168.43.61/tado/get_tadoX_status_V2.php?deviceid=<device_code>&what=me
-// <device_code> aus dem Ergebnis des Calls von get_tado_get_device_token.php
+// <device_code> aus dem Ergebnis des Calls von get_tadoX_get_device_token.php
 
 function getAccessToken($deviceID) {
 
