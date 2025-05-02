@@ -23,6 +23,11 @@
 // 2025-03-11: Implementierung der neuen deviceID. Dazu ist das Script wie folgt zu starten:
 // http://192.168.43.61/tado/get_tadoX_status_V2.php?deviceid=<device_code>&what=me
 // <device_code> aus dem Ergebnis des Calls von get_tadoX_get_device_token.php
+// 2025-05-01:
+// https://www.php.net/manual/en/function.flock.php
+// getAccessToken muss das Token File öffnen, locken, unlocken und schließen. Dann
+// muss der File-Descriptor an die beiden Routinen übergeben werden.
+// Ganzes file lesen: https://www.php.net/manual/en/function.fread.php
 
 function getAccessToken($deviceID) {
 
@@ -34,7 +39,10 @@ function getAccessToken($deviceID) {
 	
 	writeLogFile("getAccessToken called", "");
 
-	readTokenFile();
+	$fh = readTokenFile();
+	if (!$fh) {
+	   return false;
+	}
 
 	if ($deviceID != "") {
 
@@ -64,7 +72,7 @@ function getAccessToken($deviceID) {
 	   $_SESSION['expires_in']=$myTadoTokenArray["expires_in"];
 	   $_SESSION['expires_time']=time()+$myTadoTokenArray["expires_in"];
 
-	   writeTokenFile();
+	   writeTokenFile($fh);
 
 	} else if ($_SESSION['expires_time'] <= time()) {
 
@@ -96,8 +104,14 @@ function getAccessToken($deviceID) {
 	   $_SESSION['expires_in']=$myTadoTokenArray["expires_in"];
 	   $_SESSION['expires_time']=time()+$myTadoTokenArray["expires_in"];
 
-	   writeTokenFile();
+	   writeTokenFile($fh);
 	}
+
+	fflush($fh);
+	flock($fh, LOCK_UN);
+	fclose($fh);
+	writeLogFile("fileLock", '{"lock": "Token file unlocked and closed"}');
+	return true;
 }
 
 function buildTokenJSON() {
@@ -114,26 +128,38 @@ function readTokenFile() {
 
 	global $_SESSION, $oauth2URL;
 
-	$tokenData=file_get_contents("/opt/fhem/tadoTokenDir/tadoToken.txt");
-	writeLogFile("readTokenFile", $tokenData);
-	if ($tokenData === FALSE) {
-	   $_SESSION['access_token']="";
-	   $_SESSION['refresh_token']="";
-	   $_SESSION['expires_in']=0;
-	   $_SESSION['expires_time']=time();
-        } else {
-	   $myTadoTokenArray=json_decode($tokenData, true);
-	   $_SESSION['access_token']=$myTadoTokenArray["access_token"];
-	   $_SESSION['refresh_token']=$myTadoTokenArray["refresh_token"];
-	   $_SESSION['expires_in']=$myTadoTokenArray["expires_in"];
-	   $_SESSION['expires_time']=$myTadoTokenArray["expires_time"];
+	$filename="/opt/fhem/tadoTokenDir/tadoToken.txt";
+	$filehandle=fopen($filename, "r+");
+	if (!$filehandle) {
+	   return false;
+	}
+	if (flock($filehandle, LOCK_EX)) {
+	   writeLogFile("fileLock", '{"lock": "Token file opened and locked"}');
+	   $tokenData=fread($filehandle, filesize($filename));
+	   writeLogFile("readTokenFile", $tokenData);
+	   if ($tokenData === FALSE) {
+	      $_SESSION['access_token']="";
+	      $_SESSION['refresh_token']="";
+	      $_SESSION['expires_in']=0;
+	      $_SESSION['expires_time']=time();
+       	   } else {
+	      $myTadoTokenArray=json_decode($tokenData, true);
+	      $_SESSION['access_token']=$myTadoTokenArray["access_token"];
+	      $_SESSION['refresh_token']=$myTadoTokenArray["refresh_token"];
+	      $_SESSION['expires_in']=$myTadoTokenArray["expires_in"];
+	      $_SESSION['expires_time']=$myTadoTokenArray["expires_time"];
+	   }
+	   return $filehandle;
+	} else {
+	   return false;
 	}
 }
 
-function writeTokenFile() {
+function writeTokenFile($fh) {
 
 	$tokenData = buildTokenJSON();
-	file_put_contents("/opt/fhem/tadoTokenDir/tadoToken.txt", $tokenData, LOCK_EX);
+	fseek($fh, 0);
+	fwrite($fh, $tokenData);
 	writeLogFile("writeTokenFile", $tokenData);
 
 }

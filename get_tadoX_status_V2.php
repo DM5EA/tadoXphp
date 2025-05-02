@@ -14,22 +14,8 @@ header('Content-Type: application/json; charset=utf-8');
 
 // Switch debug on/off
 
-//	$debugging = 1;
-	$debugging = 0;
-
-        if (isset($_SESSION['interlock'])) {
-	   if ($_SESSION['interlock'] == 1) {
-              if (isset($_GET['what'])) {
-                 writeLogFile("pageCall", '{"what": "'.$_GET['what'].'"}');
-              }
-	      writeLogFile("pageLock", '{"lock": "Page locked. Exiting ..."}');
-	      print('{"lock": "Page locked. Exiting ..."}');
-	      exit();
-	   }
-        }
-
-	$_SESSION['interlock']=1;
-        writeLogFile("pageLock", '{"lock": "Lock set"}');
+	$debugging = 1;
+//	$debugging = 0;
 
 // 1. tado stuff - get the data
 //    Basic stuff for the URLs etc.
@@ -68,7 +54,11 @@ header('Content-Type: application/json; charset=utf-8');
         if (isset($_GET['what'])) {
             writeLogFile("pageCall", '{"what": "'.$_GET['what'].'"}');
 	}
-	getAccessToken($deviceID);
+
+	if(!getAccessToken($deviceID)) {
+            writeLogFile("error", '{"reason": "cannot obtain token"}');
+	    exit;
+	}
 		
 // Open curl session
 
@@ -162,8 +152,6 @@ header('Content-Type: application/json; charset=utf-8');
 	}
 
 	curl_close($curl);
-	$_SESSION['interlock']=0;
-        writeLogFile("pageLock", '{"lock": "Lock reset"}');
 
 // Done with getting the tado stuff
 
