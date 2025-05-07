@@ -158,6 +158,7 @@ function readTokenFile() {
 function writeTokenFile($fh) {
 
 	$tokenData = buildTokenJSON();
+	ftruncate($fh, 0);      // Important as the token length may vary
 	fseek($fh, 0);
 	fwrite($fh, $tokenData);
 	writeLogFile("writeTokenFile", $tokenData);
